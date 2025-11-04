@@ -115,3 +115,9 @@ flutter run -d <device_id>
 - Các base widgets trong `lib/shared/widgets/` giúp giao diện thống nhất và tái sử dụng cao.
 - API client nằm ở `lib/shared/utils/api_client.dart` (Dio + interceptors/logging ở môi trường dev).
 - Theo chiến lược migration: bottom-up (shared/widgets/utils) và feature-by-feature.
+
+---
+
+## Quy trình Git (Git Flow)
+
+Vui lòng xem tài liệu chi tiết tại: [README_GIT_FLOW.md](./README_GIT_FLOW.md)
