@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:koreanhwa_flutter/shared/widgets/app_button.dart';
 import 'package:koreanhwa_flutter/shared/widgets/custom_button.dart';
 import 'package:koreanhwa_flutter/shared/widgets/custom_text_field.dart';
+import 'package:koreanhwa_flutter/features/auth/presentation/providers/auth_provider.dart';
+import 'package:go_router/go_router.dart';
 
 class RegisterPage extends ConsumerStatefulWidget {
   const RegisterPage({super.key});
@@ -45,10 +47,17 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
   Future<void> _onSubmit() async {
     final bool isValid = _formKey.currentState?.validate() ?? false;
     if (!isValid) return;
-    setState(() => _submitting = true);
-    await Future<void>.delayed(const Duration(milliseconds: 600));
-    setState(() => _submitting = false);
-    // TODO: Tích hợp gọi API đăng ký và điều hướng
+    final notifier = ref.read(authProvider.notifier);
+    await notifier.register(_emailController.text.trim(), _passwordController.text);
+    final state = ref.read(authProvider);
+    if (state == AuthState.authenticated) {
+      if (!mounted) return;
+      context.go('/dashboard');
+    } else if (state == AuthState.error) {
+      if (!mounted) return;
+      final msg = notifier.errorMessage ?? 'Đăng ký thất bại';
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+    }
   }
 
   @override
@@ -234,7 +243,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                             const SizedBox(height: 20),
                             CustomButton(
                               label: 'Đăng ký',
-                              isLoading: _submitting,
+                              isLoading: ref.watch(authProvider) == AuthState.loading,
                               onPressed: _onSubmit,
                               size: AppButtonSize.lg,
                             ),

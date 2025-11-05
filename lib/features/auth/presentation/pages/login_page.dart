@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:koreanhwa_flutter/features/auth/presentation/providers/auth_provider.dart';
 import 'package:koreanhwa_flutter/shared/widgets/app_button.dart';
 import 'package:koreanhwa_flutter/shared/widgets/custom_button.dart';
 import 'package:koreanhwa_flutter/shared/widgets/custom_text_field.dart';
@@ -36,10 +37,17 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   Future<void> _onSubmit() async {
     final isValid = _formKey.currentState?.validate() ?? false;
     if (!isValid) return;
-    setState(() => _submitting = true);
-    await Future<void>.delayed(const Duration(milliseconds: 600));
-    setState(() => _submitting = false);
-    // TODO: integrate with auth flow & router
+    final notifier = ref.read(authProvider.notifier);
+    await notifier.login(_emailController.text.trim(), _passwordController.text);
+    final state = ref.read(authProvider);
+    if (state == AuthState.authenticated) {
+      if (!mounted) return;
+      context.go('/dashboard');
+    } else if (state == AuthState.error) {
+      if (!mounted) return;
+      final msg = notifier.errorMessage ?? 'Đăng nhập thất bại';
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+    }
   }
 
   @override
@@ -173,7 +181,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                             const SizedBox(height: 8),
                             CustomButton(
                               label: 'Sign In',
-                              isLoading: _submitting,
+                              isLoading: ref.watch(authProvider) == AuthState.loading,
                               onPressed: _onSubmit,
                               size: AppButtonSize.lg,
                             ),
