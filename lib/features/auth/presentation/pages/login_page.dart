@@ -39,13 +39,13 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     if (!isValid) return;
     final notifier = ref.read(authProvider.notifier);
     await notifier.login(_emailController.text.trim(), _passwordController.text);
-    final state = ref.read(authProvider);
-    if (state == AuthState.authenticated) {
+    final status = ref.read(authProvider);
+    if (status.status == AuthState.authenticated) {
       if (!mounted) return;
-      context.go('/dashboard');
-    } else if (state == AuthState.error) {
+      context.go('/');
+    } else if (status.status == AuthState.error) {
       if (!mounted) return;
-      final msg = notifier.errorMessage ?? 'Đăng nhập thất bại';
+      final msg = status.errorMessage ?? 'Đăng nhập thất bại';
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
     }
   }
@@ -181,7 +181,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                             const SizedBox(height: 8),
                             CustomButton(
                               label: 'Sign In',
-                              isLoading: ref.watch(authProvider) == AuthState.loading,
+                              isLoading: ref.watch(authProvider).status == AuthState.loading,
                               onPressed: _onSubmit,
                               size: AppButtonSize.lg,
                             ),

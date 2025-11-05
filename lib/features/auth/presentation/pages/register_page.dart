@@ -49,13 +49,13 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
     if (!isValid) return;
     final notifier = ref.read(authProvider.notifier);
     await notifier.register(_emailController.text.trim(), _passwordController.text);
-    final state = ref.read(authProvider);
-    if (state == AuthState.authenticated) {
+    final status = ref.read(authProvider);
+    if (status.status == AuthState.authenticated) {
       if (!mounted) return;
-      context.go('/dashboard');
-    } else if (state == AuthState.error) {
+      context.go('/');
+    } else if (status.status == AuthState.error) {
       if (!mounted) return;
-      final msg = notifier.errorMessage ?? 'Đăng ký thất bại';
+      final msg = status.errorMessage ?? 'Đăng ký thất bại';
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
     }
   }
@@ -243,7 +243,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                             const SizedBox(height: 20),
                             CustomButton(
                               label: 'Đăng ký',
-                              isLoading: ref.watch(authProvider) == AuthState.loading,
+                              isLoading: ref.watch(authProvider).status == AuthState.loading,
                               onPressed: _onSubmit,
                               size: AppButtonSize.lg,
                             ),
